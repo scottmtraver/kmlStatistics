@@ -1,0 +1,11 @@
+Created by Scott Traver
+Created 05/15/2012
+
+This program is a small java kml analyzer
+It is configured to create a list of kml objects as well as store metadata
+It was created to analyze kismet and wigle.net kml file outputs to process metadata about wifi AP's gathered using either of these programs
+
+Versions
+Version 1	-	05/15/2012	Read wigle.net and kismet .kml files for placemark objects
+							Parse and process the data and provide statistics about overall security and naming
+							Security is held in the Security Enum
