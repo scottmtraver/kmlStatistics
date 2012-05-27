@@ -5,7 +5,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.LinkedList;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -23,13 +22,15 @@ public class kmlStatMeta
 	public HashMap<String, Integer> names;
 	public HashMap<String, Integer> security;
 	public int count;
-	public int unsecure;
+	public int unsecureCount;
+	public String unsecureKml;
 	
 	//constructor
 	public kmlStatMeta(String filepath)
 	{
 		//initialize fields
 		this.count = 0;
+		this.unsecureKml = "";
 		this.security = new HashMap<String, Integer>();
 		this.names = new HashMap<String, Integer>();
 		for(int i = 0; i < Security.values().length; i++)		//fill security array
@@ -47,12 +48,17 @@ public class kmlStatMeta
 		}
 		
 	}
+	public String unsecureKml()//create new kml placemarks based on criteria (such as no security)
+	{
+		return this.unsecureKml;
+	}
+	
 	public String metadata()//simple metadata
 	{
 		String ret = "";
 		ret += "Count:" + this.count;
-		double percentage = ((double)this.unsecure / (double)this.count) * 100;
-		ret += "\nUnsecure: " + this.unsecure + " : " + percentage;
+		double percentage = ((double)this.unsecureCount / (double)this.count) * 100;
+		ret += "\nUnsecure: " + this.unsecureCount + " : " + percentage;
 		return ret;
 	}
 	
@@ -77,10 +83,10 @@ public class kmlStatMeta
 		for(int i = 0; i < this.names.keySet().size(); i++)
 		{
 			String temp = (String)this.names.keySet().toArray()[i];
-			//if(this.names.get(temp) > 1)
-			//{
+			if(this.names.get(temp) > 1)
+			{
 				ret += "\n" + temp + " : " + this.names.get(temp);
-			//}
+			}
 		}
 		return ret;
 	}
@@ -97,6 +103,11 @@ public class kmlStatMeta
 		//System.out.println("Root element :" + doc.getDocumentElement().getNodeName());
 		NodeList nList = doc.getElementsByTagName("Placemark");
  
+		
+		//set up kml build for new file
+		//Modeled off wiggle.net's kml file
+		this.unsecureKml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
+		this.unsecureKml = this.unsecureKml + "<kml xmlns=\"http://earth.google.com/kml/2.2\"><Document>\n";
 		//kml list
 		
 		for (int temp = 0; temp < nList.getLength(); temp++) {
@@ -128,11 +139,28 @@ public class kmlStatMeta
 					}
 				}
 				if(secStr == "")			//log insecure network
-					this.unsecure++;
+				{
+					saveUnsecureKml(eElement);
+				}
 		      
 				this.count++;						//increase total count
 		   }
+		   
+		   
+		}
+		//close kml build file
+		   this.unsecureKml = this.unsecureKml + "</Document></kml>";
 	}
+	public void saveUnsecureKml(Element ele)
+	{
+		String name = getTextValue(ele, "name");
+		String desc = getTextValue(ele, "description");
+		String coor = getTextValue(ele, "coordinates");
+		String making = "<Placemark><name><![CDATA[" + name + "]]></name>";
+		making = making + "<description><![CDATA[" + desc + "]]></description>";
+		making = making + "<Point><coordinates>" + coor + "</coordinates></Point></Placemark>\n";
+		this.unsecureKml = this.unsecureKml + making;
+		this.unsecureCount++;
 	}
 	
 	private static String getTextValue(Element ele, String tagName) {
