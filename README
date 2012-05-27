@@ -11,3 +11,4 @@ Version 1	-	05/15/2012	Read wigle.net and kismet .kml files for placemark object
 							Security is held in the Security Enum
 Version 2	-	05/21/2012	Created a simple GUI for the application. Modified processing to 1 pass for memory efficancy
 							removed individual network objects
+Version 3	-	05/27/2012	Added kml file output to the GUI for a kml of unsecure networks only
